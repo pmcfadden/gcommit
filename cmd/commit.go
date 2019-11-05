@@ -19,9 +19,12 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"gopkg.in/src-d/go-git.v4"
+	"gopkg.in/src-d/go-git.v4/plumbing/object"
 )
 
 // commitCmd represents the commit command
@@ -35,13 +38,13 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		// directory, err := os.Getwd()
-		// _CheckIfError(err)
-		// fmt.Println(directory)
-		// r, err := git.PlainOpen(directory)
-		// _CheckIfError(err)
-		// w, err := r.Worktree()
-		// _CheckIfError(err)
+		directory, err := os.Getwd()
+		_CheckIfError(err)
+		fmt.Println(directory)
+		r, err := git.PlainOpen(directory)
+		_CheckIfError(err)
+		w, err := r.Worktree()
+		_CheckIfError(err)
 		// status, err := w.Status()
 		// _CheckIfError(err)
 		// fmt.Println(status)
@@ -54,7 +57,15 @@ to quickly create a Cobra application.`,
 		if format, ok := format.(string); ok {
 			if story, ok := story.(string); ok {
 				if pair, ok := pair.(string); ok {
-					fmt.Println(fmt.Sprintf(format, story, pair, message))
+					fullMessage := fmt.Sprintf(format, story, pair, message)
+					_, err := w.Commit(fullMessage, &git.CommitOptions{
+						Author: &object.Signature{
+							Name:  "Patrick",
+							Email: "patrick.mcfadden@grainger.com",
+							When:  time.Now(),
+						},
+					})
+					_CheckIfError(err)
 				}
 			}
 		}
