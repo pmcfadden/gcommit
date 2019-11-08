@@ -28,6 +28,8 @@ import (
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
 )
 
+var dryRun bool
+
 // commitCmd represents the commit command
 var commitCmd = &cobra.Command{
 	Use:   "commit",
@@ -71,13 +73,17 @@ to quickly create a Cobra application.`,
 		viper.Set("pair", pair)
 		viper.WriteConfig()
 		fullMessage := fmt.Sprintf(format, story, pair, message)
-		_, err = w.Commit(fullMessage, &git.CommitOptions{
-			Author: &object.Signature{
-				Name:  name,
-				Email: email,
-				When:  time.Now(),
-			},
-		})
+		if dryRun {
+			fmt.Println(fullMessage)
+		} else {
+			_, err = w.Commit(fullMessage, &git.CommitOptions{
+				Author: &object.Signature{
+					Name:  name,
+					Email: email,
+					When:  time.Now(),
+				},
+			})
+		}
 		_CheckIfError(err)
 	},
 }
@@ -98,7 +104,7 @@ func init() {
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// commitCmd.PersistentFlags().String("foo", "", "A help for foo")
+	commitCmd.Flags().BoolVar(&dryRun, "dry-run", false, "Don't actually make a commit, just print the full message")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
