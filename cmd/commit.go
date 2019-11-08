@@ -55,11 +55,15 @@ to quickly create a Cobra application.`,
 		email := viper.GetString("author.email")
 		reader := bufio.NewReader(os.Stdin)
 		fmt.Printf("Enter Story [%s]: ", story)
-		story, _ = reader.ReadString('\n')
-		story = strings.TrimSuffix(story, "\n")
+		maybeStory, _ := reader.ReadString('\n')
+		if maybeStory != "\n" {
+			story = strings.TrimSuffix(maybeStory, "\n")
+		}
 		fmt.Printf("Enter Pair [%s]: ", pair)
-		pair, _ = reader.ReadString('\n')
-		pair = strings.TrimSuffix(pair, "\n")
+		maybePair, _ := reader.ReadString('\n')
+		if maybePair != "\n" {
+			pair = strings.TrimSuffix(maybePair, "\n")
+		}
 		fmt.Print("Enter text: ")
 		message, _ := reader.ReadString('\n')
 		message = strings.TrimSuffix(message, "\n")
