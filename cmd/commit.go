@@ -19,6 +19,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -40,7 +41,6 @@ to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		directory, err := os.Getwd()
 		_CheckIfError(err)
-		fmt.Println(directory)
 		r, err := git.PlainOpen(directory)
 		_CheckIfError(err)
 		w, err := r.Worktree()
@@ -48,27 +48,33 @@ to quickly create a Cobra application.`,
 		// status, err := w.Status()
 		// _CheckIfError(err)
 		// fmt.Println(status)
+		format := viper.GetString("format")
+		story := viper.GetString("story")
+		pair := viper.GetString("pair")
+		name := viper.GetString("author.name")
+		email := viper.GetString("author.email")
 		reader := bufio.NewReader(os.Stdin)
+		fmt.Printf("Enter Story [%s]: ", story)
+		story, _ = reader.ReadString('\n')
+		story = strings.TrimSuffix(story, "\n")
+		fmt.Printf("Enter Pair [%s]: ", pair)
+		pair, _ = reader.ReadString('\n')
+		pair = strings.TrimSuffix(pair, "\n")
 		fmt.Print("Enter text: ")
 		message, _ := reader.ReadString('\n')
-		format := viper.Get("format")
-		story := viper.Get("story")
-		pair := viper.Get("pair")
-		if format, ok := format.(string); ok {
-			if story, ok := story.(string); ok {
-				if pair, ok := pair.(string); ok {
-					fullMessage := fmt.Sprintf(format, story, pair, message)
-					_, err := w.Commit(fullMessage, &git.CommitOptions{
-						Author: &object.Signature{
-							Name:  "Patrick",
-							Email: "patrick.mcfadden@grainger.com",
-							When:  time.Now(),
-						},
-					})
-					_CheckIfError(err)
-				}
-			}
-		}
+		message = strings.TrimSuffix(message, "\n")
+		viper.Set("story", story)
+		viper.Set("pair", pair)
+		viper.WriteConfig()
+		fullMessage := fmt.Sprintf(format, story, pair, message)
+		_, err = w.Commit(fullMessage, &git.CommitOptions{
+			Author: &object.Signature{
+				Name:  name,
+				Email: email,
+				When:  time.Now(),
+			},
+		})
+		_CheckIfError(err)
 	},
 }
 
