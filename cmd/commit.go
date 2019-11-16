@@ -22,8 +22,8 @@ import (
 	"strings"
 	"time"
 
+	cfg "github.com/pmcfadden/gcommit/internal/models"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
 )
@@ -47,39 +47,20 @@ to quickly create a Cobra application.`,
 		_CheckIfError(err)
 		w, err := r.Worktree()
 		_CheckIfError(err)
-		// status, err := w.Status()
-		// _CheckIfError(err)
-		// fmt.Println(status)
-		format := viper.GetString("format")
-		story := viper.GetString("story")
-		pair := viper.GetString("pair")
-		name := viper.GetString("author.name")
-		email := viper.GetString("author.email")
-		reader := bufio.NewReader(os.Stdin)
-		fmt.Printf("Enter Story [%s]: ", story)
-		maybeStory, _ := reader.ReadString('\n')
-		if maybeStory != "\n" {
-			story = strings.TrimSuffix(maybeStory, "\n")
-		}
-		fmt.Printf("Enter Pair [%s]: ", pair)
-		maybePair, _ := reader.ReadString('\n')
-		if maybePair != "\n" {
-			pair = strings.TrimSuffix(maybePair, "\n")
-		}
+		gitInfo := cfg.ReadAndSetConfig(os.Stdin)
 		fmt.Print("Enter text: ")
+		reader := bufio.NewReader(os.Stdin)
 		message, _ := reader.ReadString('\n')
 		message = strings.TrimSuffix(message, "\n")
-		viper.Set("story", story)
-		viper.Set("pair", pair)
-		viper.WriteConfig()
-		fullMessage := fmt.Sprintf(format, story, pair, message)
+
+		fullMessage := fmt.Sprintf(gitInfo.Format, gitInfo.Story, gitInfo.Pair, message)
 		if dryRun {
 			fmt.Println(fullMessage)
 		} else {
 			_, err = w.Commit(fullMessage, &git.CommitOptions{
 				Author: &object.Signature{
-					Name:  name,
-					Email: email,
+					Name:  gitInfo.Name,
+					Email: gitInfo.Email,
 					When:  time.Now(),
 				},
 			})
